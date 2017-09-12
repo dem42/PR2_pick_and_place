@@ -2,20 +2,21 @@
 
 [//]: # (Image References)
 
-[image1]: ./images/original.jpg
-[image2]: ./images/no_outlier.jpg
-[image3]: ./images/downsampled.jpg
-[image4]: ./images/passthrough.jpg
-[image5]: ./images/table.jpg
-[image6]: ./images/objects.jpg
-[image7]: ./images/cluster.jpg
-[image8]: ./images/confusion.jpg
-[image9]: ./images/labels1.jpg
-[image10]: ./images/labels2.jpg
-[image11]: ./images/lables3.jpg
-[image13]: ./images/collision_map_table_2.jpg
-[image14]: ./images/collision_map_full.jpg
-[image15]: ./images/pick_place.jpg
+[image1]: ./images/original.png
+[image2]: ./images/no_outlier.png
+[image3]: ./images/downsampled.png
+[image4]: ./images/passthrough.png
+[image5]: ./images/table.png
+[image6]: ./images/objects.png
+[image7]: ./images/cluster.png
+[image8]: ./images/confusion.png
+[image9]: ./images/labels1.png
+[image10]: ./images/labels2.png
+[image11]: ./images/lables3.png
+[image12]: ./images/collision_map_table_2.png
+[image13]: ./images/collision_map_full.png
+[image14]: ./images/collision_map_picked.png
+[image15]: ./images/pick_and_place.png
 
 ### Writeup
 In this project I implemented the perception pipeline, the collision map construction and the pick and place robot task for the three test worlds. The following writeup is split into three tasks based on the rubric criteria, a section that discusses the pick and place challenge and a section that discusses details of the code implementation.
@@ -67,11 +68,15 @@ Given the labeled objects, in the method `pr2_mover`, I implemented the mover by
 
 For the pick and place to work correctly, I additionally send a collision map to the PR2 robot. I compute this collision map in two steps. First inside the `__main__` part I start a left, right rotation of the PR2 robot so that I have collision data for the left and right sides of the table which are normally not visible. This rotation is implemented in the method `jointCheck`. The idea is that I have to keep a state machine which knows which rotation I need to do next. To determine whether a state transition needs to happen, I query the `/pr2/joint_states` topic. 
 
-While the PR2 is rotating, it keeps updating a global list of table point cloud points called `table_cluster`. After the rotation is done, this list stores all the table points. Inside the method `pr2_mover` we then fill this list with the remaining objects on the table and send it to the topic `/pr2/3d_map/points` which is where the collision map is stored. I have the additional method `clear_collision_map()` which is needed because the collision map in PR2 is additive so if I want to make sure I am not sending data about already picked up object, I need to send a request to the `/clear_octomap` service, which will clear the exisiting map. 
+While the PR2 is rotating, it keeps updating a global list of table point cloud points called `table_cluster`. After the rotation is done, this list stores all the table points. Inside the method `pr2_mover` we then fill this list with the remaining objects on the table and send it to the topic `/pr2/3d_map/points` which is where the collision map is stored. I have the additional method `clear_collision_map()` which is needed because the collision map in PR2 is additive so if I want to make sure I am not sending data about already picked up object, I need to send a request to the `/clear_octomap` service, which will clear the exisiting map.
 
 ![collision map table][image12]
-![collision map with objects where some have been picked up][image13]
-![pick and place][image14]
+
+![collision map full][image13]
+
+![collision map with objects where some have been picked up][image14]
+
+![pick and place gazeebo][image15]
 
 #### Implementation
 I implemented everything as just one ROS node, using the `clustering` node from the project template. I noticed that topics sometimes will not receive messages if I publish a message immediately after creating a publisher, so I added a short timeout of two seconds implemented using `rospy.Rate`. 
@@ -80,7 +85,7 @@ As discussed in the pick and place section, I used a state machine implemented u
 
 The collision map calculation is implemented in a very expensive way and it only keeps track of the table and not the boxes. In the instructions it said to create a map for the table only which is what I did, however I think the correct thing to do is to also include the boxes in the collision map. It is expensive because I store the point cloud points all in a list which will contain many duplicates.
 
-The pick and place action sometimes fails because the gripper does not attach correctly. I do not think it is due to the ROS node code.
+The pick and place action sometimes fails because the gripper does not attach correctly. I do not think it is due to the ROS node code. This happens almost every time with the "book" object.
 
 Another problem with my implementation is that once an item has been picked up, the robot no longer knows the collision size of the picked-up item. This means it doesn't always manage to place them into the box because it doesn't know how it will fit. This seems to happen mainly with the large objects like the "snacks".
 
