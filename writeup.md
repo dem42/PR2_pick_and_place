@@ -82,6 +82,8 @@ Pick and place
 ![pick and place gazeebo][image15]
 
 #### Implementation
+The files `features.py` which includes the histogram computations and the files `capture_features_final.py` and `train_svm.py` are included in the top level directory of the repository. In the virtual machine I ran them from within the sensor_stick package.
+
 I implemented everything as just one ROS node, using the `clustering` node from the project template. I noticed that topics sometimes will not receive messages if I publish a message immediately after creating a publisher, so I added a short timeout of two seconds implemented using `rospy.Rate`. 
 
 As discussed in the pick and place section, I used a state machine implemented using arrays to setup the PR2 robot world joint rotation. This involves listening to a joint state topic and switching to a new state based on what is published on that topic. I found this approach quite ugly, but I couldn't find a better way to communicate with the PR2 to see if it finished moving. There was no ROS service that I could find.
