@@ -12,7 +12,7 @@
 [image8]: ./images/confusion.png
 [image9]: ./images/labels1.png
 [image10]: ./images/labels2.png
-[image11]: ./images/lables3.png
+[image11]: ./images/labels3.png
 [image12]: ./images/collision_map_table_2.png
 [image13]: ./images/collision_map_full.png
 [image14]: ./images/collision_map_picked.png
@@ -70,12 +70,15 @@ For the pick and place to work correctly, I additionally send a collision map to
 
 While the PR2 is rotating, it keeps updating a global list of table point cloud points called `table_cluster`. After the rotation is done, this list stores all the table points. Inside the method `pr2_mover` we then fill this list with the remaining objects on the table and send it to the topic `/pr2/3d_map/points` which is where the collision map is stored. I have the additional method `clear_collision_map()` which is needed because the collision map in PR2 is additive so if I want to make sure I am not sending data about already picked up object, I need to send a request to the `/clear_octomap` service, which will clear the exisiting map.
 
+Image of table collision map construction:
 ![collision map table][image12]
 
+Images of full collision map and how it changes when objects are picked up:
 ![collision map full][image13]
 
 ![collision map with objects where some have been picked up][image14]
 
+Pick and place
 ![pick and place gazeebo][image15]
 
 #### Implementation
